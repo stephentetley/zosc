@@ -17,6 +17,9 @@
 module ZOsc.Encode
   where
 
+import Data.Binary.IEEE754              -- package: data-binary-ieee754
+
+
 import Data.ByteString.Builder
 import Data.Int
 import Data.Monoid
@@ -48,6 +51,9 @@ paddedASCIIString ss = string7 ss <> padding
 address :: String -> Builder
 address = paddedASCIIString
 
+
+-- | (Obviously) This is a signed integer.
+--
 int32 :: Int32 -> Builder
 int32 = int32BE
 
@@ -63,9 +69,15 @@ string :: String -> Builder
 string = paddedASCIIString
 
 
-
+-- | Implemented with Data.Binary.IEEE754 @doubleToWord@
 double64 :: Double -> Builder
-double64 = doubleDec
+double64 = word64BE . doubleToWord
+
+
+-- | Implemented with ByteString.Builder @doubleDec@
+--
+double64' :: Double -> Builder
+double64' = doubleDec
 
 -- | ASCII char padded to 4 bytes.
 --
@@ -96,6 +108,7 @@ midi pid status d1 d2 = word8 pid <> word8 status <> word8 d1 <> word8 d2
 
 
 -- | Special case time tag
+--
 immediately :: Builder
 immediately = word64BE 1
 

@@ -3,6 +3,7 @@
 module Demo01 where
 
 import ZOsc.Encode
+import ZOsc.Decode as DE
 
 import Network.Socket
 import Network.BSD
