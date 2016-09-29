@@ -171,7 +171,7 @@ bundleTag :: Parser String
 bundleTag = literal "#bundle"
 
 
--- | Note @bundle@ is not really useful do to the list of 
+-- | Note @bundle@ is not really useful due to the list of 
 -- parsers to run being limited to a homogenous type.
 --
 -- It is included largely for illustration purposes - use the 

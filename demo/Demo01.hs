@@ -3,7 +3,7 @@
 module Demo01 where
 
 import ZOsc.Blob
-import qualified ZOsc.Datatypes as OLD
+import ZOsc.Universe
 import qualified ZOsc.Decode as D
 import ZOsc.Encode
 import ZOsc.TimeTag
@@ -27,12 +27,7 @@ test_msg = [47,116,101,115,116,0,0,0,44,105,105,105,0,0,0,0,0,0,0,1,0,0,0,2,0,0,
 
 temp01 = map chr test_msg
 
-typeTag :: [Char] -> Builder
-typeTag = foldl' op (char7 ',')
-  where
-    op ac c = ac <> (char7 c)
-
-test02 = hPutBuilder stdout $ typeTag ['i', 'f', 's', 'b']
+test02 = encode $ typeTagString ['i', 'f', 's', 'b']
 
 -- can use floatDec for float32
 

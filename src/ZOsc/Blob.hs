@@ -28,7 +28,7 @@ data Blob = Blob
     { blob_size     :: !Word32
     , blob_data     :: !B.ByteString
     }
-  deriving (Eq,Show)
+  deriving (Eq,Ord,Show)
 
 
 fromByteString :: B.ByteString -> Blob
