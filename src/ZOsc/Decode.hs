@@ -33,7 +33,8 @@ import Data.Word
 
 -- Design note - we need more then Binary.Get
 
-
+decode :: Parser a -> B.ByteString -> Either String a
+decode = parseOnly
 
 nullChar :: Parser Char
 nullChar = '\0' <$ satisfy (==0)
@@ -46,18 +47,35 @@ padding n = suffix (n `mod` 4)
     suffix 3 = nullChar >> return ()
     suffix _ = return ()
 
-paddedASCIIByteString :: Parser B.ByteString
-paddedASCIIByteString = do 
+
+toASCII7 :: String -> B.ByteString
+toASCII7 = B.pack . map (fromIntegral . ord)
+
+fromASCII7 :: B.ByteString -> String
+fromASCII7 = map (chr . fromIntegral) . B.unpack
+
+
+-- | parsers but strips the terminator
+paddedTerminatedByteString :: Parser B.ByteString
+paddedTerminatedByteString = do 
     input <- ATTO.takeWhile (/= 0)
-    let len = B.length input
-    padding (len `mod` 4)
+    _ <- ATTO.satisfy (==0)     -- null terminator
+    let len1 = 1+ B.length input
+    padding (len1 `mod` 4)
     return input
 
 
 paddedASCIIString :: Parser String
-paddedASCIIString = map chrw . B.unpack <$> paddedASCIIByteString
-  where
-    chrw = chr . fromIntegral
+paddedASCIIString = fromASCII7 <$> paddedTerminatedByteString
+
+
+literal :: String -> Parser String
+literal s = do 
+    input <- ATTO.string (toASCII7 s)
+    _ <- ATTO.satisfy (==0)     -- null terminator
+    let len1 = 1+ B.length input
+    padding (len1 `mod` 4)
+    return $ fromASCII7 $ input
 
 -- | Address has to be ASCII
 --
@@ -132,8 +150,13 @@ false = return False
 nil :: Parser ()
 nil = return ()
 
+
+-- | aka @impulse@
 infinitum :: Parser ()
 infinitum = return ()
+
+impulse :: Parser ()
+impulse = return ()
 
 
 midi :: Parser (Word8,Word8,Word8,Word8)
@@ -141,6 +164,9 @@ midi = (,,,) <$> anyWord8 <*> anyWord8 <*> anyWord8 <*> anyWord8
 
 typeTagString :: Parser [Char] 
 typeTagString = char8 ',' *> paddedASCIIString
+
+bundleTag :: Parser String
+bundleTag = literal "#bundle"
 
 
 --------------------------------------------------------------------------------

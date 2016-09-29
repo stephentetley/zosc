@@ -4,7 +4,7 @@ module Demo01 where
 
 import ZOsc.Blob
 import qualified ZOsc.Datatypes as OLD
-import ZOsc.Decode as D
+import qualified ZOsc.Decode as D
 import ZOsc.Encode
 import ZOsc.TimeTag
 
@@ -17,6 +17,8 @@ import Data.Monoid
 import Data.List (foldl')
 import System.IO (stdout)
 
+
+demo01 = encode $ string "hello"
 
 -- = "/test..."
 test_msg = [47,116,101,115,116,0,0,0,44,105,105,105,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,3]

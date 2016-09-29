@@ -23,6 +23,7 @@ import ZOsc.TimeTag
 import Data.Binary.IEEE754              -- package: data-binary-ieee754
 
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as Lazy
 import Data.ByteString.Builder
 import Data.Int
 import Data.Monoid
@@ -32,6 +33,9 @@ import System.IO (stdout)
 
 printEncode :: Builder -> IO ()
 printEncode = hPutBuilder stdout
+
+encode :: Builder -> B.ByteString
+encode = Lazy.toStrict . toLazyByteString
 
 
 nullChar :: Builder
@@ -46,8 +50,10 @@ padding n = suffix (n `mod` 4)
     suffix _ =  mempty
                
 
+-- | Adds a null terminator and padding to 4 byte boundary
+--
 paddedASCIIString :: String -> Builder
-paddedASCIIString ss = string7 ss <> padding (length ss)
+paddedASCIIString ss = string7 ss <> nullChar <> padding (1+ length ss)
 
 paddedByteString :: B.ByteString -> Builder
 paddedByteString ss = byteString ss <> padding (B.length ss)
@@ -131,8 +137,13 @@ false = mempty
 nil :: Builder
 nil = mempty
 
+-- | aka @impulse@
 infinitum :: Builder
 infinitum = mempty
+
+impulse :: Builder
+impulse = mempty
+
 
 midi :: Word8 -> Word8 -> Word8 -> Word8 -> Builder
 midi pid status d1 d2 = word8 pid <> word8 status <> word8 d1 <> word8 d2
@@ -145,3 +156,6 @@ immediately = word64BE 1
 
 typeTagString :: [Char] -> Builder
 typeTagString = paddedASCIIString . (',':)
+
+bundleTag :: Builder
+bundleTag = paddedASCIIString "#bundle"

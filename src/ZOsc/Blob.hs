@@ -15,7 +15,10 @@
 --------------------------------------------------------------------------------
 
 module ZOsc.Blob
-  where
+  (
+    Blob(..)
+  , fromByteString
+  ) where
 
 
 import qualified Data.ByteString as B
