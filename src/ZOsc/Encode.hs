@@ -159,3 +159,14 @@ typeTagString = paddedASCIIString . (',':)
 
 bundleTag :: Builder
 bundleTag = paddedASCIIString "#bundle"
+
+
+bundle :: TimeTag -> [Builder] -> Builder
+bundle tag xs = mconcat $ bundleTag : timeTag tag : map bundle1 xs
+
+bundle1 :: Builder -> Builder
+bundle1 b = uint32 len <> byteString payload
+  where
+    payload = encode b
+    len = fromIntegral $ B.length payload
+                

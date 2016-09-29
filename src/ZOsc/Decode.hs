@@ -22,9 +22,11 @@ import ZOsc.TimeTag
 
 import Data.Binary.IEEE754              -- package: data-binary-ieee754
 
+
 import Data.Attoparsec.ByteString                   -- package: attoparsec
 import qualified Data.Attoparsec.ByteString as ATTO
 
+import Control.Monad ( mzero, void )
 import Data.Bits
 import qualified Data.ByteString as B
 import Data.Char
@@ -167,6 +169,30 @@ typeTagString = char8 ',' *> paddedASCIIString
 
 bundleTag :: Parser String
 bundleTag = literal "#bundle"
+
+
+-- | Note @bundle@ is not really useful do to the list of 
+-- parsers to run being limited to a homogenous type.
+--
+-- It is included largely for illustration purposes - use the 
+-- source code as a starting point to write your own bundle 
+-- parser.
+--
+bundle :: [Parser a] -> Parser (TimeTag, [a])
+bundle ps = do 
+    void $ bundleTag
+    tt <- timeTag
+    xs <- mapM bundle1 ps 
+    return (tt,xs)
+
+
+bundle1 :: Parser a -> Parser a
+bundle1 mf = do
+    len <- uint32
+    payload <- ATTO.take (fromIntegral len)
+    case decode mf payload of
+      Left err -> mzero <?> err
+      Right ans -> return ans
 
 
 --------------------------------------------------------------------------------
