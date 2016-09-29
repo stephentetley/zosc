@@ -17,7 +17,7 @@
 module ZOsc.Decode
   where
 
-
+import ZOsc.Blob
 import ZOsc.TimeTag
 
 import Data.Binary.IEEE754              -- package: data-binary-ieee754
@@ -64,6 +64,13 @@ paddedASCIIString = map chrw . B.unpack <$> paddedASCIIByteString
 address :: Parser String
 address = paddedASCIIString
 
+
+-- | Added in 1.1
+--
+uint32 :: Parser Word32
+uint32 = word32BE
+
+
 -- | Relies on @fromIntegral@ to convert to two's complement.
 int32 :: Parser Int32
 int32 = fromIntegral <$> word32BE
@@ -83,6 +90,15 @@ string = paddedASCIIString
 int64 :: Parser Int64
 int64 = fromIntegral <$> word64BE
 
+blob :: Parser Blob
+blob = do 
+   i <- word32BE
+   bs <- ATTO.take (fromIntegral i)
+   padding (fromIntegral i)
+   return $ Blob { blob_size = i, blob_data = bs }
+
+blobData :: Parser B.ByteString
+blobData = blob_data <$> blob
 
 timeTag :: Parser TimeTag
 timeTag = fromSecondsAndPicos <$> word32BE <*> word32BE

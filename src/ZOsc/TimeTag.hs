@@ -44,6 +44,9 @@ fromSecondsAndPicos s p = fromSeconds s + (TimeTag $ fromIntegral p)
 immediate :: TimeTag
 immediate = TimeTag 1
 
+biggest :: TimeTag
+biggest = TimeTag $ maxBound
+
 
 timeTagNow :: IO TimeTag
 timeTagNow = fmap post getCurrentTime

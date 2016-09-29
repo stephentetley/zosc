@@ -17,11 +17,12 @@
 module ZOsc.Encode
   where
 
+import ZOsc.Blob
 import ZOsc.TimeTag
 
 import Data.Binary.IEEE754              -- package: data-binary-ieee754
 
-
+import qualified Data.ByteString as B
 import Data.ByteString.Builder
 import Data.Int
 import Data.Monoid
@@ -36,15 +37,20 @@ printEncode = hPutBuilder stdout
 nullChar :: Builder
 nullChar = char7 '\0'
 
-paddedASCIIString :: String -> Builder
-paddedASCIIString ss = string7 ss <> padding
+padding :: Int -> Builder
+padding n = suffix (n `mod` 4)
   where
-    padding = let i = length ss `mod` 4 
-              in case i of { 1 -> nullChar <> nullChar <> nullChar
-                           ; 2 -> nullChar <> nullChar
-                           ; 3 -> nullChar
-                           ; _ -> mempty }
-              
+    suffix 1 = nullChar <> nullChar <> nullChar
+    suffix 2 = nullChar <> nullChar
+    suffix 3 = nullChar
+    suffix _ =  mempty
+               
+
+paddedASCIIString :: String -> Builder
+paddedASCIIString ss = string7 ss <> padding (length ss)
+
+paddedByteString :: B.ByteString -> Builder
+paddedByteString ss = byteString ss <> padding (B.length ss)
 
 
 
@@ -52,6 +58,15 @@ paddedASCIIString ss = string7 ss <> padding
 --
 address :: String -> Builder
 address = paddedASCIIString
+
+
+--------------------------------------------------------------------------------
+-- Atomic Types
+
+-- | Added in 1.1
+--
+uint32 :: Word32 -> Builder
+uint32 = word32BE
 
 
 -- | (Obviously) This is a signed integer.
@@ -74,6 +89,12 @@ string = paddedASCIIString
 int64 :: Int64 -> Builder
 int64 = int64BE
 
+
+blob :: Blob -> Builder
+blob b = word32BE (blob_size b) <> paddedByteString (blob_data b)
+
+asBlob :: B.ByteString -> Builder
+asBlob = blob . fromByteString
 
 timeTag :: TimeTag -> Builder
 timeTag t = word64BE $ fromIntegral t
