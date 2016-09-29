@@ -17,6 +17,8 @@
 module ZOsc.Encode
   where
 
+import ZOsc.TimeTag
+
 import Data.Binary.IEEE754              -- package: data-binary-ieee754
 
 
@@ -67,6 +69,14 @@ float32 = floatDec
 --
 string :: String -> Builder
 string = paddedASCIIString
+
+
+int64 :: Int64 -> Builder
+int64 = int64BE
+
+
+timeTag :: TimeTag -> Builder
+timeTag t = word64BE $ fromIntegral t
 
 
 -- | Implemented with Data.Binary.IEEE754 @doubleToWord@

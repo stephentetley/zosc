@@ -17,6 +17,9 @@
 module ZOsc.Decode
   where
 
+
+import ZOsc.TimeTag
+
 import Data.Binary.IEEE754              -- package: data-binary-ieee754
 
 import Data.Attoparsec.ByteString                   -- package: attoparsec
@@ -61,7 +64,7 @@ paddedASCIIString = map chrw . B.unpack <$> paddedASCIIByteString
 address :: Parser String
 address = paddedASCIIString
 
-
+-- | Relies on @fromIntegral@ to convert to two's complement.
 int32 :: Parser Int32
 int32 = fromIntegral <$> word32BE
 
@@ -74,6 +77,15 @@ float32 = wordToFloat <$> word32BE
 --
 string :: Parser String
 string = paddedASCIIString
+
+
+-- | Relies on @fromIntegral@ to convert to two's complement.
+int64 :: Parser Int64
+int64 = fromIntegral <$> word64BE
+
+
+timeTag :: Parser TimeTag
+timeTag = fromSecondsAndPicos <$> word32BE <*> word32BE
 
 
 -- | Implemented with Data.Binary.IEEE754 @wordToDouble@
@@ -111,9 +123,17 @@ infinitum = return ()
 midi :: Parser (Word8,Word8,Word8,Word8)
 midi = (,,,) <$> anyWord8 <*> anyWord8 <*> anyWord8 <*> anyWord8
 
+typeTagString :: Parser [Char] 
+typeTagString = char8 ',' *> paddedASCIIString
 
---- Helpers
 
+--------------------------------------------------------------------------------
+-- Helpers
+
+char8 :: Char -> Parser Char
+char8 c = (chr . fromIntegral) <$> satisfy (==ix)
+  where
+    ix = fromIntegral $ ord c
 
 word16BE :: Parser Word16
 word16BE = w16be <$> anyWord8 <*> anyWord8

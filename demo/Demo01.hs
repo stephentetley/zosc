@@ -2,8 +2,10 @@
 
 module Demo01 where
 
+import qualified ZOsc.Datatypes as OLD
+import ZOsc.Decode as D
 import ZOsc.Encode
-import ZOsc.Decode as DE
+import ZOsc.TimeTag
 
 import Network.Socket
 import Network.BSD
