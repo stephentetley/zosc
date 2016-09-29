@@ -2,6 +2,7 @@
 
 module Demo01 where
 
+import ZOsc.Blob
 import qualified ZOsc.Datatypes as OLD
 import ZOsc.Decode as D
 import ZOsc.Encode
