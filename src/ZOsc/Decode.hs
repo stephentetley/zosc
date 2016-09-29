@@ -186,9 +186,15 @@ bundle ps = do
     return (tt,xs)
 
 
+
+
 bundle1 :: Parser a -> Parser a
 bundle1 mf = do
     len <- uint32
+    sized (fromIntegral len) mf
+
+sized :: Int -> Parser a -> Parser a
+sized len mf = do
     payload <- ATTO.take (fromIntegral len)
     case decode mf payload of
       Left err -> mzero <?> err

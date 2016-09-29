@@ -40,11 +40,15 @@ oneshotSend hostname portnum pkt = withSocketsDo $ do
     sendTo sckt (encode pkt)  sa 
     sClose sckt
 
+-- fails...
+demo01 = decode $ encode $ test_pkt
 
 
 temp01 = map (chr . fromIntegral) $ B.unpack test_msg
 
 test02 = hPutBuilder stdout $ Enc.typeTagString ['i', 'f', 's', 'b']
+
+
 
 -- can use floatDec for float32
 
