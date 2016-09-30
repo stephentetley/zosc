@@ -2,6 +2,7 @@
 
 module DemoNet where
 
+import qualified ZOsc.Decode as Dec
 import qualified ZOsc.Encode as Enc
 import ZOsc.Universe
 
@@ -43,6 +44,11 @@ oneshotSend hostname portnum pkt = withSocketsDo $ do
 -- fails...
 demo01 = decode $ encode $ test_pkt
 
+
+demo02 = Dec.decode Dec.address (Enc.encode $ Enc.address "/home")
+
+demo02a = Enc.encode $ Enc.address "/home"
+demo02b = Dec.decode Dec.address (B.pack $ map (fromIntegral . ord) $ "/home\0\0\0")
 
 temp01 = map (chr . fromIntegral) $ B.unpack test_msg
 

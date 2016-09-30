@@ -20,6 +20,8 @@ module ZOsc.Decode
 import ZOsc.Blob
 import ZOsc.TimeTag
 
+-- import Debug.Trace -- TEMP
+
 import Data.Binary.IEEE754              -- package: data-binary-ieee754
 
 
@@ -41,6 +43,17 @@ decode = parseOnly
 nullChar :: Parser Char
 nullChar = '\0' <$ satisfy (==0)
 
+
+ascii :: Char -> Parser Char
+ascii c = c <$ satisfy (== fromIntegral (ord c))
+
+
+peekASCII :: Char -> Parser Char 
+peekASCII ch = 
+    peekWord8' >>= \i -> if ch == (chr $ fromIntegral i) then return ch else failure
+  where
+    failure = mzero <?> "invalid prefix peekASCII"
+
 padding :: Int -> Parser ()
 padding n = suffix (n `mod` 4)
   where
@@ -48,6 +61,8 @@ padding n = suffix (n `mod` 4)
     suffix 2 = nullChar >> nullChar >> return ()
     suffix 3 = nullChar >> return ()
     suffix _ = return ()
+
+
 
 
 toASCII7 :: String -> B.ByteString
@@ -61,8 +76,8 @@ fromASCII7 = map (chr . fromIntegral) . B.unpack
 paddedTerminatedByteString :: Parser B.ByteString
 paddedTerminatedByteString = do 
     input <- ATTO.takeWhile (/= 0)
-    _ <- ATTO.satisfy (==0)     -- null terminator
-    let len1 = 1+ B.length input
+    void $ ATTO.satisfy (==0)     -- null terminator
+    let len1 = 1 + B.length input
     padding (len1 `mod` 4)
     return input
 
@@ -74,7 +89,7 @@ paddedASCIIString = fromASCII7 <$> paddedTerminatedByteString
 literal :: String -> Parser String
 literal s = do 
     input <- ATTO.string (toASCII7 s)
-    _ <- ATTO.satisfy (==0)     -- null terminator
+    void $ ATTO.satisfy (==0)     -- null terminator
     let len1 = 1+ B.length input
     padding (len1 `mod` 4)
     return $ fromASCII7 $ input
@@ -82,7 +97,9 @@ literal s = do
 -- | Address has to be ASCII
 --
 address :: Parser String
-address = paddedASCIIString
+address = pf <?> "address" 
+  where
+    pf = peekASCII '/' *> paddedASCIIString
 
 
 -- | Added in 1.1
@@ -165,7 +182,12 @@ midi :: Parser (Word8,Word8,Word8,Word8)
 midi = (,,,) <$> anyWord8 <*> anyWord8 <*> anyWord8 <*> anyWord8
 
 typeTagString :: Parser [Char] 
-typeTagString = char8 ',' *> paddedASCIIString
+typeTagString = stripComma <$> (peekASCII ',' *> paddedASCIIString)
+  where
+    stripComma (_:xs) = xs
+    stripComma []     = []
+
+
 
 bundleTag :: Parser String
 bundleTag = literal "#bundle"
@@ -199,6 +221,21 @@ sized len mf = do
     case decode mf payload of
       Left err -> mzero <?> err
       Right ans -> return ans
+
+
+-- Note - peek first char of message, if '/' then address , if '#' then bundle
+-- is best way to distinguish what to parse
+
+data Prefix = PREFIX_HASH | PREFIX_SLASH
+  deriving (Eq,Ord,Show)
+
+-- | Does not consume input - fails if no input
+packetPrefix :: Parser Prefix
+packetPrefix = peekWord8' >>= \i -> case (chr $ fromIntegral i) of
+   '#' -> return PREFIX_HASH
+   '/' -> return PREFIX_SLASH
+   _   -> mzero <?> "invalid prefix"
+
 
 
 --------------------------------------------------------------------------------

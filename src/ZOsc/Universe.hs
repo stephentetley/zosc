@@ -93,7 +93,8 @@ decode :: B.ByteString -> Either String Packet
 decode = Dec.decode packet 
 
 packet :: Parser Packet
-packet = decodeBundle `mplus` decodeMessage
+packet = do 
+   decodeBundle `mplus` decodeMessage
 
 packetSz :: Parser Packet
 packetSz = do 
