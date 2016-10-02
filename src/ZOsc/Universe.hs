@@ -25,7 +25,7 @@ import ZOsc.TimeTag
 
 import Data.Attoparsec.ByteString                   -- package: attoparsec
 
-import Control.Monad ( void, mplus )
+import Control.Monad ( void )
 import qualified Data.ByteString as B
 import Data.ByteString.Builder
 import Data.Int
@@ -90,23 +90,32 @@ encodeAtom (Double64 d)         = Enc.double64 d
 -- Decode
 
 decode :: B.ByteString -> Either String Packet
-decode = Dec.decode packet 
+decode = Dec.decode packet
 
 packet :: Parser Packet
-packet = do 
-   decodeBundle `mplus` decodeMessage
+packet = Dec.packetPrefix >>= \x -> case x of
+    Dec.PREFIX_HASH -> decodeBundle
+    Dec.PREFIX_FWD_SLASH -> decodeMessage
 
-packetSz :: Parser Packet
-packetSz = do 
-   len <- Dec.uint32
-   Dec.sized (fromIntegral len) packet
+packetList1 :: Parser [Packet]
+packetList1 = one
+  where
+    one  = (:) <$> packetSz1 <*> step
+    step = do { done <- atEnd
+              ; if done then return [] else one }
+      
+
+packetSz1 :: Parser Packet
+packetSz1 = do 
+    len <- Dec.uint32
+    Dec.sized (fromIntegral len) packet
 
 
 decodeBundle :: Parser Packet
 decodeBundle = do 
     void $ Dec.bundleTag
     tt <- Dec.timeTag
-    ps <- many1 packetSz
+    ps <- packetList1
     return $ Bundle { bdl_time_tag = tt, bdl_elements = ps }
 
 decodeMessage :: Parser Packet

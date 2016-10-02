@@ -226,14 +226,14 @@ sized len mf = do
 -- Note - peek first char of message, if '/' then address , if '#' then bundle
 -- is best way to distinguish what to parse
 
-data Prefix = PREFIX_HASH | PREFIX_SLASH
+data Prefix = PREFIX_HASH | PREFIX_FWD_SLASH
   deriving (Eq,Ord,Show)
 
 -- | Does not consume input - fails if no input
 packetPrefix :: Parser Prefix
 packetPrefix = peekWord8' >>= \i -> case (chr $ fromIntegral i) of
    '#' -> return PREFIX_HASH
-   '/' -> return PREFIX_SLASH
+   '/' -> return PREFIX_FWD_SLASH
    _   -> mzero <?> "invalid prefix"
 
 
