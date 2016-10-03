@@ -21,7 +21,7 @@ import System.IO (stdout)
 -- = "/test..."
 test_msg = B.pack [47,116,101,115,116,0,0,0,44,105,105,105,0,0,0,0,0,0,0,1,0,0,0,2,0,0,0,3]
 
-test_pkt = Message "/test" [ Int32 1 ]
+test_pkt = Message "/home" [ Int32 1 ]
 
 main = main2 "127.0.0.1" 9001
 		 
@@ -49,6 +49,9 @@ demo02 = Dec.decode Dec.address (Enc.encode $ Enc.address "/home")
 
 demo02a = Enc.encode $ Enc.address "/home"
 demo02b = Dec.decode Dec.address (B.pack $ map (fromIntegral . ord) $ "/home\0\0\0")
+
+demo03  = oneshotSend "127.0.0.1" 9001 test_pkt
+demo03a  = oneshotSend "127.0.0.1" 57120 test_pkt
 
 temp01 = map (chr . fromIntegral) $ B.unpack test_msg
 
