@@ -1,8 +1,7 @@
 <CsoundSynthesizer>
 <CsOptions>
-; Enable both realtime input and output
+; Enable just realtime output
 -odac    ;;; output
-; -iadc    ;;; input
 </CsOptions>
 <CsInstruments>
 sr = 44100

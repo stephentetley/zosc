@@ -1,0 +1,57 @@
+name:             zosc
+version:          0.1.0
+license:          BSD3
+license-file:     LICENSE
+copyright:        Stephen Tetley <stephen.tetley@gmail.com>
+maintainer:       Stephen Tetley <stephen.tetley@gmail.com>
+homepage:         https://github.com/stephentetley/zosc
+category:         Sound
+synopsis:         Encode and decode OSC packets.
+description:
+  .
+  Small library to work with OSC packets.
+  .
+build-type:         Simple
+stability:          unstable
+cabal-version:      >= 1.2
+
+extra-source-files:
+  demo/Demo01.hs,
+  externals/csound/simple-receive.csd,
+  externals/csound/simple-send.csd,
+  externals/pd/simple-receive.pd,
+  externals/pd/simple-send.pd,
+  externals/supercollider/simple-receive.sc,
+  externals/supercollider/simple-send.sc
+
+
+library
+  hs-source-dirs:     src
+  build-depends:      
+    base < 5,
+    bytestring >= 0.10,
+    time >= 1.6,
+    binary >= 0.5,
+    data-binary-ieee754 >= 0.4,
+    attoparsec >= 0.13 && < 0.14
+  
+  exposed-modules:
+    ZOsc.Blob,
+    ZOsc.Decode,
+    ZOsc.Encode,
+    ZOsc.TimeTag,
+    ZOsc.Universe
+    
+  other-modules:
+    
+      
+  extensions:
+    
+
+  ghc-options:
+  
+  includes: 
+  
+
+  
+  
